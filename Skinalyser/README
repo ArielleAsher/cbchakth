@@ -1,0 +1,6 @@
+model.h5 is the model i created using the skinalysermodelcreator file. Hence, to view the code for the model, please view skinalysermodelcreator
+skinalysermodelcreator was created in google colab notebook. this is why you will find paths originating from mydrive in this file.
+skinalyser.py is the file you need to call in cmd.
+i have added images for testing the model sourced form american cancer society.
+This model has 94% val top 3 accuracy
+spoiler alert: this is the first draft only, which means it requires a lot of optimization. the optimization is still in process.
