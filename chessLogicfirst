@@ -1,0 +1,706 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class chessLogic : MonoBehaviour
+{
+    public static void PlayChess(int pieceNumber)
+    {
+        switch (pieceNumber)
+        {
+            case 1:
+                KingGame.Main(new string[] { }); // Call the King's class
+                break;
+            //case 2:
+            //    QueenGame.Main(new string[] { }); // Call the Queen's class
+            //    break;
+            //case 3:
+            //    KnightGame.Main(new string[] { }); // Call the Knight's class
+            //    break;
+            //case 4:
+            //    RookGame.Main(new string[] { }); // Call the Rook's class
+            //    break;
+            //case 5:
+            //    PawnGame.Main(new string[] { }); // Call the Pawn's class
+            //    break;
+            //case 6:
+            //    BishopGame.Main(new string[] { }); // Call the Bishop's class
+            //    break;
+            //default:
+            // //   break;
+        }
+    }
+
+    using System;
+using System.Collections.Generic;
+
+public class KingGame
+{
+    public static int GetSquareNumber(int n, int row, int col)
+    {
+        return (row - 1) * n + col;
+    }
+
+    public static List<(int, int)> GetAllKingPositions(int n, int currentRow, int currentColumn, List<(int, int)> snakePositions)
+    {
+        List<(int, int)> kingPositions = new List<(int, int)>();
+
+        // Possible relative movements for a king
+        int[] rowOffsets = { -1, -1, -1, 0, 0, 1, 1, 1 };
+        int[] colOffsets = { -1, 0, 1, -1, 1, -1, 0, 1 };
+
+        // Calculate possible positions
+        for (int i = 0; i < rowOffsets.Length; i++)
+        {
+            int newRow = currentRow + rowOffsets[i];
+            int newCol = currentColumn + colOffsets[i];
+
+            // Check if the new position is within the board limits
+            if (IsValidPosition(n, newRow, newCol))
+            {
+                // Check if the new position encounters a snake
+                if (IsSnakePosition(snakePositions, newRow, newCol))
+                {
+                    // Adjust position to the snake's head
+                    (int snakeHeadRow, int snakeHeadCol) = GetSnakeHeadPosition(snakePositions, newRow, newCol);
+                    newRow = snakeHeadRow;
+                    newCol = snakeHeadCol;
+                }
+
+                // Add position to possible moves
+                kingPositions.Add((newRow, newCol));
+            }
+        }
+
+        return kingPositions;
+    }
+
+    public static bool IsValidPosition(int n, int row, int col)
+    {
+        return row >= 1 && row <= n && col >= 1 && col <= n;
+    }
+
+    public static bool IsSnakePosition(List<(int, int)> snakePositions, int row, int col)
+    {
+        foreach (var position in snakePositions)
+        {
+            if (position.Item1 == row && position.Item2 == col)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static (int, int) GetSnakeHeadPosition(List<(int, int)> snakePositions, int row, int col)
+    {
+        foreach (var position in snakePositions)
+        {
+            if (position.Item1 == row && position.Item2 == col)
+            {
+                // Snake head found, return its tail position
+                return position;
+            }
+        }
+        return (row, col); // If snake not found, return current position
+    }
+
+    public static void Main(string[] args)
+    {
+        int n = 10; // Board size (10x10)
+
+        // Generate random snake positions
+        Random random = new Random();
+        List<(int, int)> snakePositions = new List<(int, int)>();
+        for (int i = 0; i < n / 2; i++)
+        {
+            int row = random.Next(1, n);
+            int col = random.Next(1, n);
+            snakePositions.Add((row, col));
+        }
+
+        Console.WriteLine("Random snake positions on the board:");
+        foreach (var position in snakePositions)
+        {
+            Console.WriteLine($"Snake at: ({position.Item1}, {position.Item2})");
+        }
+
+        Console.WriteLine("Enter the current position of the king (row and column):");
+        Console.Write("Row: ");
+        int currentRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int currentColumn = Convert.ToInt32(Console.ReadLine());
+
+        List<(int, int)> kingPositions = GetAllKingPositions(n, currentRow, currentColumn, snakePositions);
+
+        Console.WriteLine($"All possible king positions from ({currentRow}, {currentColumn}):");
+        foreach (var position in kingPositions)
+        {
+            Console.WriteLine($"({position.Item1}, {position.Item2}) - Square: {GetSquareNumber(n, position.Item1, position.Item2)}");
+        }
+
+        Console.WriteLine("Choose a position to move to:");
+        Console.Write("Row: ");
+        int moveRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int moveColumn = Convert.ToInt32(Console.ReadLine());
+
+        if (kingPositions.Contains((moveRow, moveColumn)))
+        {
+            Console.WriteLine($"Valid move. King moves to the selected position - Square: {GetSquareNumber(n, moveRow, moveColumn)}");
+        }
+        else
+        {
+            Console.WriteLine("Invalid move. King cannot move to the selected position.");
+        }
+    }
+}
+
+public static void Main(string[] args)
+    {
+        // Example: Call PlayChess with input 1 to choose King
+        int input = 1;
+        PlayChess(input);
+    }
+    // Start is called before the first frame update
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
+
+
+public class BishopGame
+{
+    public static List<(int, int)> GetBishopMoves(int currentRow, int currentColumn)
+    {
+        List<(int, int)> bishopMoves = new List<(int, int)>();
+
+        // Move diagonally upwards to the left
+        for (int i = 1; i <= 3; i++)
+        {
+            int newRow = currentRow - i;
+            int newColumn = currentColumn - i;
+            if (IsValidPosition(newRow, newColumn))
+            {
+                bishopMoves.Add((newRow, newColumn));
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // Move diagonally upwards to the right
+        for (int i = 1; i <= 3; i++)
+        {
+            int newRow = currentRow - i;
+            int newColumn = currentColumn + i;
+            if (IsValidPosition(newRow, newColumn))
+            {
+                bishopMoves.Add((newRow, newColumn));
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // Move diagonally downwards to the left
+        for (int i = 1; i <= 3; i++)
+        {
+            int newRow = currentRow + i;
+            int newColumn = currentColumn - i;
+            if (IsValidPosition(newRow, newColumn))
+            {
+                bishopMoves.Add((newRow, newColumn));
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        // Move diagonally downwards to the right
+        for (int i = 1; i <= 3; i++)
+        {
+            int newRow = currentRow + i;
+            int newColumn = currentColumn + i;
+            if (IsValidPosition(newRow, newColumn))
+            {
+                bishopMoves.Add((newRow, newColumn));
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return bishopMoves;
+    }
+
+    public static bool IsValidPosition(int row, int col)
+    {
+        return row >= 1 && row <= 10 && col >= 1 && col <= 10;
+    }
+
+    public static void Main(string[] args)
+    {
+        int boardSize = 10; // 10x10 board
+        Random random = new Random();
+
+        // Generate random snake positions
+        List<(int, int)> snakePositions = new List<(int, int)>();
+        for (int i = 0; i < 5; i++) // 5 snakes for example
+        {
+            int headRow = random.Next(1, 11); // Generate random row index (1-based)
+            int headCol = random.Next(1, 11); // Generate random column index (1-based)
+            int tailRow = random.Next(1, headRow); // Generate random row index for tail (1-based) lower than head
+            int tailCol = random.Next(1, 11); // Generate random column index for tail (1-based)
+            snakePositions.Add((headRow, headCol));
+            snakePositions.Add((tailRow, tailCol)); // Add tail position
+        }
+
+        Console.WriteLine("Random snake positions on the board:");
+        for (int i = 0; i < snakePositions.Count; i+=2) // Iterate over snake head positions
+        {
+            Console.WriteLine($"Snake head at: {snakePositions[i]}");
+            Console.WriteLine($"Snake tail at: {snakePositions[i+1]}");
+        }
+
+        Console.WriteLine("Enter the current position of the bishop (row and column):");
+        Console.Write("Row: ");
+        int currentRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int currentColumn = Convert.ToInt32(Console.ReadLine());
+
+        List<(int, int)> bishopMoves = GetBishopMoves(currentRow, currentColumn);
+
+        Console.WriteLine($"All possible bishop moves from ({currentRow}, {currentColumn}):");
+        foreach (var move in bishopMoves)
+        {
+            Console.WriteLine($"({move.Item1}, {move.Item2})");
+        }Console.WriteLine("Choose a position to move to:");
+        Console.Write("Row: ");
+        int moveRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int moveColumn = Convert.ToInt32(Console.ReadLine());if (bishopMoves.Contains((moveRow, moveColumn)))
+        {
+            Console.WriteLine($"Valid move. Bishop moves to the selected position.");
+            for (int i = 0; i < snakePositions.Count; i += 2) // Check for snake bite
+            {
+                if (snakePositions[i] == (moveRow, moveColumn)) // Snake head position
+                {
+                    Console.WriteLine($"Ouch! Bishop got bitten by a snake at position ({moveRow}, {moveColumn}). Moving to the snake tail position.");
+                    Console.WriteLine($"Bishop moved to the snake tail at position {snakePositions[i + 1]}.");
+                    return;
+                }
+            }
+            Console.WriteLine($"Bishop moved to the position ({moveRow}, {moveColumn}).");
+        }
+        else
+        {
+            Console.WriteLine("Invalid move. Bishop cannot move to the selected position.");
+        }
+    }
+}
+
+
+
+public class RookGame
+{
+    public static List<(int, int)> GetRookMoves(int currentRow, int currentColumn)
+    {
+        List<(int, int)> rookMoves = new List<(int, int)>();
+
+        // Move up to 3 rows above
+        for (int row = currentRow - 1; row >= Math.Max(1, currentRow - 3); row--)
+        {
+            rookMoves.Add((row, currentColumn));
+        }
+
+        // Move up to 3 rows below
+        for (int row = currentRow + 1; row <= Math.Min(10, currentRow + 3); row++)
+        {
+            rookMoves.Add((row, currentColumn));
+        }
+
+        // Move up to 3 columns to the left
+        for (int col = currentColumn - 1; col >= Math.Max(1, currentColumn - 3); col--)
+        {
+            rookMoves.Add((currentRow, col));
+        }
+
+        // Move up to 3 columns to the right
+        for (int col = currentColumn + 1; col <= Math.Min(10, currentColumn + 3); col++)
+        {
+            rookMoves.Add((currentRow, col));
+        }
+
+        return rookMoves;
+    }
+
+    public static void Main(string[] args)
+    {
+        int boardSize = 10; // 10x10 board
+        Random random = new Random();
+
+        // Generate random snake positions
+        List<(int, int)> snakePositions = new List<(int, int)>();
+        for (int i = 0; i < 5; i++) // 5 snakes for example
+        {
+            int headRow = random.Next(1, 11); // Generate random row index (1-based)
+            int headCol = random.Next(1, 11); // Generate random column index (1-based)
+            int tailRow = random.Next(1, headRow); // Generate random row index for tail (1-based) lower than head
+            int tailCol = random.Next(1, 11); // Generate random column index for tail (1-based)
+            snakePositions.Add((headRow, headCol));
+            snakePositions.Add((tailRow, tailCol)); // Add tail position
+        }
+
+        Console.WriteLine("Random snake positions on the board:");
+        for (int i = 0; i < snakePositions.Count; i+=2) // Iterate over snake head positions
+        {
+            Console.WriteLine($"Snake head at: {snakePositions[i]}");
+            Console.WriteLine($"Snake tail at: {snakePositions[i+1]}");
+        }
+
+        Console.WriteLine("Enter the current position of the rook (row and column):");
+        Console.Write("Row: ");
+        int currentRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int currentColumn = Convert.ToInt32(Console.ReadLine());
+
+        List<(int, int)> rookMoves = GetRookMoves(currentRow, currentColumn);
+
+        Console.WriteLine($"All possible rook moves from ({currentRow}, {currentColumn}):");
+        foreach (var move in rookMoves)
+        {
+            Console.WriteLine($"({move.Item1}, {move.Item2})");
+        }
+
+        Console.WriteLine("Choose a position to move to:");
+        Console.Write("Row: ");
+        int moveRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int moveColumn = Convert.ToInt32(Console.ReadLine());
+
+        if (rookMoves.Contains((moveRow, moveColumn)))
+        {
+            Console.WriteLine($"Valid move. Rook moves to the selected position.");
+            for (int i = 0; i < snakePositions.Count; i+=2) // Check for snake bite
+            {
+                if (snakePositions[i] == (moveRow, moveColumn)) // Snake head position
+                {
+                    Console.WriteLine($"Ouch! Rook got bitten by a snake at position ({moveRow}, {moveColumn}). Moving to the snake tail position.");
+                    Console.WriteLine($"Rook moved to the snake tail at position {snakePositions[i + 1]}.");
+                    return;
+                }
+            }
+            Console.WriteLine($"Rook moved to the position ({moveRow}, {moveColumn}).");
+        }
+        else
+        {
+            Console.WriteLine("Invalid move. Rook cannot move to the selected position.");
+        }
+    }
+}
+
+
+public class KnightGame
+{
+    public static void Main(string[] args)
+    {
+        int boardSize = 10; // 10x10 board
+        Random random = new Random();
+
+        // Generate random snake positions
+        List<(int, int, int, int)> snakePositions = new List<(int, int, int, int)>();
+        for (int i = 0; i < 5; i++) // 5 snakes for example
+        {
+            int headRow = random.Next(1, 11); // Generate random row index (1-based)
+            int headCol = random.Next(1, 11); // Generate random column index (1-based)
+
+            // Generate tail position (below the head position)
+            int tailRow = random.Next(1, headRow + 1);
+            int tailCol = headCol;
+
+            snakePositions.Add((headRow, headCol, tailRow, tailCol));
+        }
+
+        Console.WriteLine("Random snake positions on the board:");
+        foreach (var position in snakePositions)
+        {
+            Console.WriteLine($"Snake head at: ({position.Item1}, {position.Item2}) - Snake tail at: ({position.Item3}, {position.Item4})");
+        }
+
+        Console.WriteLine("Enter the current position of the knight (row and column):");
+        Console.Write("Row: ");
+        int currentRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int currentColumn = Convert.ToInt32(Console.ReadLine());
+
+        List<(int, int)> knightMoves = GetKnightMoves(currentRow, currentColumn);
+
+        Console.WriteLine($"All possible knight moves from ({currentRow}, {currentColumn}):");
+        foreach (var move in knightMoves)
+        {
+            Console.WriteLine($"({move.Item1}, {move.Item2})");
+        }
+
+        Console.WriteLine("Choose a position to move to:");
+        Console.Write("Row: ");
+        int moveRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int moveColumn = Convert.ToInt32(Console.ReadLine());
+
+        if (knightMoves.Contains((moveRow, moveColumn)))
+        {
+            Console.WriteLine($"Valid move. Knight moves to the selected position.");
+            foreach (var snake in snakePositions)
+            {
+                if (snake.Item1 == moveRow && snake.Item2 == moveColumn)
+                {
+                    Console.WriteLine($"Oops! The knight encountered a snake at position ({moveRow}, {moveColumn}). Moving to the snake tail position.");
+                    Console.WriteLine($"Knight moved to the snake tail at position ({snake.Item3}, {snake.Item4}).");
+                    return;
+                }
+            }
+            Console.WriteLine($"Knight moved to the position ({moveRow}, {moveColumn}).");
+        }
+        else
+        {
+            Console.WriteLine("Invalid move. Knight cannot move to the selected position.");
+        }
+    }
+
+    public static List<(int, int)> GetKnightMoves(int currentRow, int currentColumn)
+    {
+        List<(int, int)> knightMoves = new List<(int, int)>();
+
+        int[] rowOffsets = { 1, 1, 2, 2, -1, -1, -2, -2 };
+        int[] colOffsets = { 2, -2, 1, -1, 2, -2, 1, -1 };
+
+        for (int i = 0; i < rowOffsets.Length; i++)
+        {
+            int newRow = currentRow + rowOffsets[i];
+            int newCol = currentColumn + colOffsets[i];
+
+            // Ensure the new position is within the board bounds
+            if (newRow >= 1 && newRow <= 10 && newCol >= 1 && newCol <= 10)
+            {
+                knightMoves.Add((newRow, newCol));
+            }
+        }
+
+        return knightMoves;
+    }
+}
+
+using System;
+using System.Collections.Generic;
+
+public class QueenGame
+{
+    public static void Main(string[] args)
+    {
+        int boardSize = 10; // 10x10 board
+        Random random = new Random();
+
+        // Generate random snake positions
+        List<(int, int, int, int)> snakePositions = new List<(int, int, int, int)>();
+        for (int i = 0; i < 5; i++) // 5 snakes for example
+        {
+            int headRow = random.Next(1, 11); // Generate random row index (1-based)
+            int headCol = random.Next(1, 11); // Generate random column index (1-based)
+
+            // Generate tail position (below the head position)
+            int tailRow = random.Next(1, headRow + 1);
+            int tailCol = headCol;
+
+            snakePositions.Add((headRow, headCol, tailRow, tailCol));
+        }
+
+        Console.WriteLine("Random snake positions on the board:");
+        foreach (var position in snakePositions)
+        {
+            Console.WriteLine($"Snake head at: ({position.Item1}, {position.Item2}) - Snake tail at: ({position.Item3}, {position.Item4})");
+        }
+
+        Console.WriteLine("Enter the current position of the queen (row and column):");
+        Console.Write("Row: ");
+        int currentRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int currentColumn = Convert.ToInt32(Console.ReadLine());
+
+        List<(int, int)> queenMoves = GetQueenMoves(currentRow, currentColumn);
+
+        Console.WriteLine($"All possible queen moves from ({currentRow}, {currentColumn}):");
+        foreach (var move in queenMoves)
+        {
+            Console.WriteLine($"({move.Item1}, {move.Item2})");
+        }
+
+        Console.WriteLine("Choose a position to move to:");
+        Console.Write("Row: ");
+        int moveRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int moveColumn = Convert.ToInt32(Console.ReadLine());
+
+        if (queenMoves.Contains((moveRow, moveColumn)))
+        {
+            Console.WriteLine($"Valid move. Queen moves to the selected position.");
+            foreach (var snake in snakePositions)
+            {
+                if (snake.Item1 == moveRow && snake.Item2 == moveColumn)
+                {
+                    Console.WriteLine($"Oops! The queen encountered a snake at position ({moveRow}, {moveColumn}). Moving to the snake tail position.");
+                    Console.WriteLine($"Queen moved to the snake tail at position ({snake.Item3}, {snake.Item4}).");
+                    return;
+                }
+            }
+            Console.WriteLine($"Queen moved to the position ({moveRow}, {moveColumn}).");
+        }
+        else
+        {
+            Console.WriteLine("Invalid move. Queen cannot move to the selected position.");
+        }
+    }
+
+    public static List<(int, int)> GetQueenMoves(int currentRow, int currentColumn)
+    {
+        List<(int, int)> queenMoves = new List<(int, int)>();
+
+        // Add all possible horizontal moves
+        for (int col = Math.Max(1, currentColumn - 3); col <= Math.Min(10, currentColumn + 3); col++)
+        {
+            if (col != currentColumn)
+            {
+                queenMoves.Add((currentRow, col));
+            }
+        }
+
+        // Add all possible vertical moves
+        for (int row = Math.Max(1, currentRow - 3); row <= Math.Min(10, currentRow + 3); row++)
+        {
+            if (row != currentRow)
+            {
+                queenMoves.Add((row, currentColumn));
+            }
+        }
+
+        // Add all possible diagonal moves
+        for (int i = 1; i <= 3; i++)
+        {
+            int newRow = currentRow + i;
+            int newCol = currentColumn + i;
+            if (newRow <= 10 && newCol <= 10)
+                queenMoves.Add((newRow, newCol));
+
+            newRow = currentRow - i;
+            newCol = currentColumn - i;
+            if (newRow >= 1 && newCol >= 1)
+                queenMoves.Add((newRow, newCol));newRow = currentRow + i;
+            newCol = currentColumn - i;
+            if (newRow <= 10 && newCol >= 1)
+                queenMoves.Add((newRow, newCol));
+
+            newRow = currentRow - i;
+            newCol = currentColumn + i;
+            if (newRow >= 1 && newCol <= 10)
+                queenMoves.Add((newRow, newCol));
+        }
+
+        return queenMoves;
+    }
+}
+
+using System;
+using System.Collections.Generic;
+
+public class PawnGame
+{
+    public static void Main(string[] args)
+    {
+        int boardSize = 10; // 10x10 board
+        Random random = new Random();
+
+        // Generate random snake positions
+        List<(int, int, int, int)> snakePositions = new List<(int, int, int, int)>();
+        for (int i = 0; i < 5; i++) // 5 snakes for example
+        {
+            int headRow = random.Next(3, 11); // Generate random row index (1-based)
+            int headCol = random.Next(1, 11); // Generate random column index (1-based)
+
+            // Generate tail position (below the head position)
+            int tailRow = random.Next(1, headRow);
+            int tailCol = headCol;
+
+            snakePositions.Add((headRow, headCol, tailRow, tailCol));
+        }
+
+        Console.WriteLine("Random snake positions on the board:");
+        foreach (var position in snakePositions)
+        {
+            Console.WriteLine($"Snake head at: ({position.Item1}, {position.Item2}) - Snake tail at: ({position.Item3}, {position.Item4})");
+        }
+
+        Console.WriteLine("Enter the current position of the pawn (row and column):");
+        Console.Write("Row: ");
+        int currentRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int currentColumn = Convert.ToInt32(Console.ReadLine());
+
+        List<(int, int)> pawnMoves = GetPawnMoves(currentRow, currentColumn);
+
+        Console.WriteLine($"All possible moves for the pawn from ({currentRow}, {currentColumn}):");
+        foreach (var move in pawnMoves)
+        {
+            Console.WriteLine($"({move.Item1}, {move.Item2})");
+        }
+
+        Console.WriteLine("Choose a position to move to:");
+        Console.Write("Row: ");
+        int moveRow = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Column: ");
+        int moveColumn = Convert.ToInt32(Console.ReadLine());
+
+        if (pawnMoves.Contains((moveRow, moveColumn)))
+        {
+            Console.WriteLine($"Valid move. Pawn moves to the selected position.");
+            foreach (var snake in snakePositions)
+            {
+                if (snake.Item1 == moveRow && snake.Item2 == moveColumn)
+                {
+                    Console.WriteLine($"Oops! The pawn encountered a snake at position ({moveRow}, {moveColumn}). Moving to the snake tail position.");
+                    Console.WriteLine($"Pawn moved to the snake tail at position ({snake.Item3}, {snake.Item4}).");
+                    return;
+                }
+            }
+            Console.WriteLine($"Pawn moved to the position ({moveRow}, {moveColumn}).");
+        }
+        else
+        {
+            Console.WriteLine("Invalid move. Pawn cannot move to the selected position.");
+        }
+    }
+
+    public static List<(int, int)> GetPawnMoves(int currentRow, int currentColumn)
+    {
+        List<(int, int)> pawnMoves = new List<(int, int)>();
+
+        // Pawn can move one step forward
+        int nextRow = currentRow + 1;
+        if (nextRow <= 10) // Ensure within board bounds
+        {
+            pawnMoves.Add((nextRow, currentColumn));
+        }
+
+        return pawnMoves;
+    }
+}
